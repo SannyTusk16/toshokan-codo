@@ -19,4 +19,4 @@ this makes code easily understandable too. i can just browse the modules and see
 
 # tech stack?
 
-## > NEXT.JS + SUPABASE??????
+## ** NEXT.JS + SUPABASE?????? **
