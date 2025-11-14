@@ -1,0 +1,300 @@
+Here you go bro — a fully polished, structured draft summarizing the entire system, architecture, flow, JSON module spec, LLM integration strategy, and MVP.
+No emojis.
+Tomboy vibe maintained.
+
+====================================================================
+FULL SYSTEM DRAFT
+=================
+
+TITLE: VibeCode – A Modular, LLM-Native Application Builder
+DESCRIPTION:
+VibeCode is a fork of VS Code redesigned to support module-based application development. Instead of writing full applications from scratch, developers assemble open-source or premium modules that represent fully defined UI components, screens, backend logic blocks, APIs, authentication flows, and integrations. An LLM stitches these modules together by reading structured metadata (inputs, outputs, methods, documentation) and writing or editing code only where necessary. This reduces token usage, speeds up development, and ensures consistency.
+
+The system includes three major parts:
+Part A – Workspace & Module Assembly
+Part B – Code Environment (VS Code fork)
+Part C – Community Library for discovering modules
+
+Users drag and drop modules, adjust parameters, preview behavior, and let LLMs generate or modify only the glue code, not entire files.
+
+====================================================================
+CORE PRINCIPLE
+==============
+
+Traditional LLM coding writes entire files end-to-end.
+VibeCode flips the workflow:
+
+1. Modules contain code already.
+2. LLMs receive structured metadata:
+   • Inputs
+   • Outputs
+   • Methods
+   • Internal components
+   • Dependencies
+   • Documentation
+3. The LLM only generates:
+   • Glue logic between modules
+   • Missing pieces
+   • Configuration files
+   • Routing
+   • Minor edits to modules
+4. LLM is “sandboxed” to editing sections, not rewriting the entire codebase.
+
+This ensures:
+Lower tokens
+Lower hallucination
+Faster generation
+More deterministic outputs
+
+====================================================================
+TECH STACK
+==========
+
+Frontend (IDE GUI)
+Electron (same as VS Code)
+React or Svelte (VS Code uses Monaco + Electron; you can match this)
+Monaco Editor for code editing
+Custom React-based interface for the 3-panel Part A layout
+
+Backend
+Node.js + TypeScript
+Local module processing engine
+Custom LLM manager (abstract provider: Gemini, Claude, OpenAI)
+Native addons (Rust optional for performance)
+
+Storage
+Module library DB:
+• Public modules stored in a cloud database
+• Paid modules stored in a protected table with encrypted code
+• Recommendation: use Supabase or PostgreSQL for structured metadata
+• Module code itself stored in object storage (Cloudflare R2, Supabase Storage)
+
+Authentication
+Firebase Auth or Supabase Auth for the product SaaS
+Or email/password for offline mode
+
+LLM Integration
+LLM Router supporting:
+Gemini 2.0 Flash
+OpenAI GPT models
+Claude models
+User-supplied API keys
+
+Versioning & Sync
+Git integration inherited from VS Code
+Local cache of modules
+Cloud sync for purchased modules
+
+Mobile Modules (MVP: Flutter)
+Flutter CLI execution in background process
+Dart code templates
+Module registry stored as JSON metadata + actual Dart files
+
+====================================================================
+UI SYSTEM & PANELS
+==================
+
+Part A – Workspace
+Left: Module Library
+Center: Drag-and-drop module workflow (similar to Figma or Retool)
+Right: Property Panel for module variables and configuration
+
+Part B – Code Section
+Fork of VS Code
+Bottom area: “Module Graph” panel
+Shows:
+• All modules in project
+• Inter-module dependencies
+• Inputs/outputs
+• Glue code auto-generated sections
+Users can override or view generated code.
+
+Part C – Community Section
+Module discovery
+Preview module
+Import into workspace
+Supports free and paid modules
+UI similar to Figma Community or VS Code Extensions Marketplace
+
+====================================================================
+MODULE FORMAT (JSON SPEC)
+=========================
+
+Each module has two core elements:
+Metadata JSON + Code Package.
+
+Format:
+
+```json
+{
+  "id": "module_id",
+  "name": "FirebaseGoogleAuth",
+  "version": "1.0.0",
+  "type": "auth",
+  "language": "dart",
+  "framework": "flutter",
+  "visibility": "public",
+  
+  "inputs": {
+    "redirectOnSuccess": "route",
+    "themeColor": "Color"
+  },
+
+  "outputs": {
+    "userObject": "FirebaseUser",
+    "loginStatus": "bool"
+  },
+
+  "methods": [
+    {
+      "name": "signInWithGoogle",
+      "params": [],
+      "returns": "FirebaseUser"
+    }
+  ],
+
+  "dependencies": ["firebase_core", "firebase_auth"],
+
+  "codePaths": {
+    "main": "lib/modules/firebase_google_auth/main.dart",
+    "helpers": "lib/modules/firebase_google_auth/helpers.dart"
+  },
+
+  "documentation": "This module adds Google OAuth2 login for Flutter using Firebase."
+}
+```
+
+Paid modules will have `"visibility": "private"` and codePaths will be encrypted inside storage.
+Public modules will be fetched as-is.
+
+====================================================================
+HOW LLM GLUES MODULES TOGETHER
+==============================
+
+1. The IDE constructs a single JSON “project graph”.
+2. The LLM receives only:
+   • The graph
+   • Required connections
+   • Localized code snippets where changes are needed
+3. The LLM writes only the missing lines using “edit blocks”.
+4. The system applies patches instead of rewriting entire files.
+
+A typical prompt to the model:
+
+You are given:
+• Module A inputs/outputs
+• Module B inputs/outputs
+• User wants A.userObject → B.profileData
+• Patch section in file: lib/main.dart from line 80–110
+
+Output only the modified section.
+
+This keeps token usage extremely low because the model never sees the whole codebase.
+
+====================================================================
+FLOW FOR APP CREATION
+=====================
+
+flow1:
+User enters Part C (community)
+Searches template
+Previews
+Imports
+
+User attaches a sketch or screenshot
+Presses “VibeCode AI”
+LLM reads modules → generates layout → modifies variables
+User proceeds to code view
+LLM ensures routing, authentication, and data storage are correctly linked
+
+====================================================================
+RECOMMENDED STACK FOR PUBLIC + PRIVATE MODULE STORE
+===================================================
+
+Database:
+Supabase PostgreSQL
+
+Reasons:
+Native Row Level Security (important for hiding paid modules)
+Rich metadata querying
+Integrated auth
+Affordable at scale
+
+Storage:
+Supabase Storage or Cloudflare R2
+
+Paid Modules Strategy:
+Keep code encrypted at rest
+Decrypt only on client device with license token
+No full plaintext stored server-side for unauthorized users
+Module metadata stays public, but code is private
+
+====================================================================
+MONETIZATION
+============
+
+Free modules (open-source)
+Paid modules
+Paid templates
+Credits for LLM usage
+Pro marketplace for devs to sell modules
+
+====================================================================
+MVP (Phase 1)
+=============
+
+MVP must include:
+
+1. Part B – VS Code-like environment
+   Monaco-based editor inside Electron
+   File explorer
+   Git support (forked from VS Code or embedded)
+
+2. Part A – Workspace
+   Left: Module Library
+   Middle: Drag-and-drop module canvas
+   Right: Variable configuration panel
+
+Flutter Modules implemented:
+
+Google Auth via Firebase
+Firebase Firestore data retrieval + write
+Login screen module
+Signup screen module
+Profile section module
+Chat interface module
+Gemini chat module (API-based)
+
+Minimal Flow:
+User drags modules → connects them → AI generates glue code → user runs Flutter build locally → app works
+
+3. Module Library
+(figma community type - ui)
+   Basic modules published
+   Hosted in Supabase
+   Public + private distinction
+
+4. LLM Integration Layer
+   Supports Gemini 2.0 Flash
+   User can supply API keys for:
+   OpenAI
+   Claude
+   More providers
+
+5. Module JSON Spec
+   Modules stored with metadata + code folder
+   Interconnections handled by LLM
+
+====================================================================
+FINAL DRAFT VERSION
+===================
+
+This draft describes:
+Full idea
+Tech stack
+Module architecture
+LLM glue logic strategy
+JSON formatting
+MVP scope
+Infrastructure storage decisions
+
