@@ -39,7 +39,10 @@ FRAMEWORK_CDN = {
         """
     },
     "bootstrap": {
-        "css": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+        "css": [
+            "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+            "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+        ],
         "js": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
     },
     "material": {
@@ -67,14 +70,47 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 def read_component(component_path: str) -> str:
     """
-    Read a component HTML file.
+    Read a component HTML file or retrieve AI-generated/online component.
     
     Args:
-        component_path: Path to the component file
+        component_path: Path to component file OR "AI_GENERATED:section_name" OR "ONLINE:framework:section"
         
     Returns:
         Component HTML content as string
     """
+    # Check if this is an AI-generated component
+    if component_path.startswith("AI_GENERATED:"):
+        section_name = component_path.split(":", 1)[1]
+        
+        # Import here to avoid circular dependency
+        try:
+            from src.component_mapper import get_ai_component
+            ai_html = get_ai_component(section_name)
+            if ai_html:
+                return ai_html
+            else:
+                raise ValueError(f"AI-generated component for '{section_name}' not found in cache")
+        except ImportError:
+            raise ValueError("AI component system not available")
+    
+    # Check if this is an online component
+    if component_path.startswith("ONLINE:"):
+        parts = component_path.split(":", 2)
+        if len(parts) >= 3:
+            framework = parts[1]
+            section = parts[2]
+            
+            try:
+                from src.online_component_fetcher import get_online_component
+                online_html = get_online_component(section, framework)
+                if online_html:
+                    return online_html
+                else:
+                    raise ValueError(f"Online component for '{section}' ({framework}) not found")
+            except ImportError:
+                raise ValueError("Online component fetcher not available")
+    
+    # Traditional file-based component
     project_root = Path(__file__).parent.parent
     full_path = project_root / component_path
     
@@ -248,11 +284,19 @@ def _get_framework_head(framework: str, template_data: dict) -> str:
     
     # Add CSS
     if "css" in framework_info:
-        css_url = framework_info["css"]
-        if framework == "tailwind":
-            head_parts.append(f'    <script src="{css_url}"></script>')
+        css_urls = framework_info["css"]
+        # Handle both single string and list of URLs
+        if isinstance(css_urls, list):
+            for css_url in css_urls:
+                if framework == "tailwind":
+                    head_parts.append(f'    <script src="{css_url}"></script>')
+                else:
+                    head_parts.append(f'    <link rel="stylesheet" href="{css_url}">')
         else:
-            head_parts.append(f'    <link rel="stylesheet" href="{css_url}">')
+            if framework == "tailwind":
+                head_parts.append(f'    <script src="{css_urls}"></script>')
+            else:
+                head_parts.append(f'    <link rel="stylesheet" href="{css_urls}">')
     
     # Add config if needed
     if "config" in framework_info:

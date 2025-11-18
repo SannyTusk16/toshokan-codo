@@ -1,0 +1,17 @@
+<div class="bg-primary text-white py-5" id="home">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-3 fw-bold mb-4">{{ hero_title|default('Welcome to Our Platform') }}</h1>
+        <p class="lead mb-4">{{ hero_subtitle|default('Build amazing websites with modern UI frameworks and ready-to-use components.') }}</p>
+        <div class="d-grid gap-2 d-md-flex">
+          <a href="#contact" class="btn btn-light btn-lg px-4">{{ cta_primary|default('Get Started') }}</a>
+          <a href="#about" class="btn btn-outline-light btn-lg px-4">{{ cta_secondary|default('Learn More') }}</a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <img src="{{ hero_image|default('https://via.placeholder.com/500x400') }}" class="img-fluid rounded shadow" alt="Hero">
+      </div>
+    </div>
+  </div>
+</div>

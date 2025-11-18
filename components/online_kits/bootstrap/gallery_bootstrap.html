@@ -1,0 +1,36 @@
+<section class="py-5" id="gallery">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col text-center">
+        <h2 class="display-5 fw-bold">{{ gallery_title|default('Gallery') }}</h2>
+        <p class="lead text-muted">{{ gallery_subtitle|default('Check out our latest work') }}</p>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card border-0 shadow">
+          <img src="{{ gallery_image1|default('https://via.placeholder.com/400x300') }}" class="card-img-top" alt="Gallery 1">
+          <div class="card-body">
+            <h6 class="card-title">{{ gallery_caption1|default('Project 1') }}</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow">
+          <img src="{{ gallery_image2|default('https://via.placeholder.com/400x300') }}" class="card-img-top" alt="Gallery 2">
+          <div class="card-body">
+            <h6 class="card-title">{{ gallery_caption2|default('Project 2') }}</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow">
+          <img src="{{ gallery_image3|default('https://via.placeholder.com/400x300') }}" class="card-img-top" alt="Gallery 3">
+          <div class="card-body">
+            <h6 class="card-title">{{ gallery_caption3|default('Project 3') }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

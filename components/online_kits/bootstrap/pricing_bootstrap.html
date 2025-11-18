@@ -1,0 +1,55 @@
+<section class="py-5 bg-light" id="pricing">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col text-center">
+        <h2 class="display-5 fw-bold">{{ pricing_title|default('Choose Your Plan') }}</h2>
+        <p class="lead text-muted">{{ pricing_subtitle|default('Flexible pricing for every need') }}</p>
+      </div>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h5 class="card-title">{{ plan1_name|default('Basic') }}</h5>
+            <h2 class="display-4 fw-bold">${{ plan1_price|default('9') }}<small class="fs-6 text-muted">/mo</small></h2>
+            <ul class="list-unstyled mt-4">
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan1_feature1|default('10 Projects') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan1_feature2|default('5GB Storage') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan1_feature3|default('Email Support') }}</li>
+            </ul>
+            <button class="btn btn-outline-primary w-100 mt-3">Get Started</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100 border-primary border-2 shadow">
+          <div class="card-body p-4">
+            <div class="badge bg-primary mb-2">Popular</div>
+            <h5 class="card-title">{{ plan2_name|default('Pro') }}</h5>
+            <h2 class="display-4 fw-bold">${{ plan2_price|default('29') }}<small class="fs-6 text-muted">/mo</small></h2>
+            <ul class="list-unstyled mt-4">
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan2_feature1|default('Unlimited Projects') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan2_feature2|default('50GB Storage') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan2_feature3|default('Priority Support') }}</li>
+            </ul>
+            <button class="btn btn-primary w-100 mt-3">Get Started</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h5 class="card-title">{{ plan3_name|default('Enterprise') }}</h5>
+            <h2 class="display-4 fw-bold">${{ plan3_price|default('99') }}<small class="fs-6 text-muted">/mo</small></h2>
+            <ul class="list-unstyled mt-4">
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan3_feature1|default('Unlimited Everything') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan3_feature2|default('500GB Storage') }}</li>
+              <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>{{ plan3_feature3|default('24/7 Phone Support') }}</li>
+            </ul>
+            <button class="btn btn-outline-primary w-100 mt-3">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

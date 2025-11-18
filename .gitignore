@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -19,9 +20,15 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+
+# Virtual Environment
+.virtualenvs/
 
 # IDE
 .vscode/
@@ -34,10 +41,33 @@ wheels/
 .DS_Store
 Thumbs.db
 
-# Project specific
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# Playwright
+.playwright/
+
+# AI Cache
+.cache/
+*.cache
+
+# Project specific - Generated websites
 dist/*.html
 dist/*.css
 dist/*.js
+dist/*.zip
+output/
+generated/
 *.log
 
 # Temporary test files
@@ -48,6 +78,11 @@ demo_*.html
 
 # Backup files
 readme_old.md
+
+# Archived files (keep the directory)
+archive/*.html
+archive/*.txt
+archive/*.log
 *.bak
 *.tmp
 

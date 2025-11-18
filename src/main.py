@@ -20,7 +20,7 @@ sys.path.insert(0, str(project_root))
 
 # Import all modules
 from src.intent_parser import parse_intent
-from src.component_mapper import load_component_registry, map_sections_to_components
+from src.component_mapper import map_sections_to_components
 from src.assembler import assemble_website
 from src.visual_validator import validate_html_string, generate_validation_summary
 from src.fixer import auto_fix_website, generate_fix_summary
@@ -38,7 +38,8 @@ def build_website(
     output_name: Optional[str] = None,
     auto_fix: bool = True,
     validate: bool = True,
-    verbose: bool = True
+    verbose: bool = True,
+    use_ai: bool = True
 ) -> Tuple[bool, Dict]:
     """
     Complete end-to-end website building process.
@@ -49,6 +50,7 @@ def build_website(
         auto_fix: Whether to automatically fix validation issues
         validate: Whether to validate the generated website
         verbose: Whether to print detailed progress
+        use_ai: Whether to use AI generation (Gemini) for components
         
     Returns:
         Tuple of (success, build_info)
@@ -98,18 +100,38 @@ def build_website(
         print("\nStage 2: 🗺️  Mapping Components...")
     
     try:
-        component_registry = load_component_registry()
-        component_mapping = map_sections_to_components(intent, component_registry)
+        # Pass user_prompt to enable AI generation (if use_ai is True)
+        component_mapping, ai_metadata = map_sections_to_components(
+            intent,
+            user_prompt=user_prompt if use_ai else "",
+            use_ai=use_ai,
+            verbose=verbose
+        )
         
         build_info["stages"]["component_mapping"] = {
             "success": True,
-            "mapped_count": len(component_mapping)
+            "mapped_count": len(component_mapping),
+            "ai_metadata": ai_metadata
         }
         
         if verbose:
             print(f"  ✅ Mapped {len(component_mapping)} components")
+            
+            # Show AI generation stats if available
+            if ai_metadata:
+                ai_generated = ai_metadata.get("ai_generated", 0)
+                from_cache = ai_metadata.get("from_cache", 0)
+                fallback = ai_metadata.get("fallback_used", 0)
+                
+                if ai_generated > 0 or from_cache > 0:
+                    print(f"  🤖 AI Generated: {ai_generated} | Cached: {from_cache} | Fallback: {fallback}")
+            
+            # Show component samples
             for section_type, component_path in list(component_mapping.items())[:3]:
-                print(f"     {section_type} → {Path(component_path).name}")
+                if isinstance(component_path, str) and component_path.startswith("AI_GENERATED:"):
+                    print(f"     {section_type} → 🤖 AI Generated")
+                else:
+                    print(f"     {section_type} → {Path(component_path).name}")
             if len(component_mapping) > 3:
                 print(f"     ... and {len(component_mapping) - 3} more")
     
@@ -118,7 +140,7 @@ def build_website(
         if verbose:
             print(f"  ❌ Failed: {str(e)}")
         return False, build_info
-    
+
     # Stage 3: Assemble Website
     if verbose:
         print("\nStage 3: 🔨 Assembling Website...")
@@ -304,6 +326,7 @@ def main():
         print("  --output <name>     Custom output filename")
         print("  --no-validate       Skip validation")
         print("  --no-fix            Skip auto-fixing")
+        print("  --no-ai             Disable AI generation (use pre-defined components)")
         print("  --quiet             Minimal output")
         print("\nFull Example:")
         print("  python src/main.py \"Build a portfolio\" --output my_portfolio --quiet")
@@ -316,6 +339,7 @@ def main():
     validate = True
     auto_fix = True
     verbose = True
+    use_ai = True
     
     # Parse flags
     i = 2
@@ -331,6 +355,9 @@ def main():
         elif arg == "--no-fix":
             auto_fix = False
             i += 1
+        elif arg == "--no-ai":
+            use_ai = False
+            i += 1
         elif arg == "--quiet":
             verbose = False
             i += 1
@@ -343,7 +370,8 @@ def main():
         output_name=output_name,
         auto_fix=auto_fix,
         validate=validate,
-        verbose=verbose
+        verbose=verbose,
+        use_ai=use_ai
     )
     
     # Exit with appropriate code

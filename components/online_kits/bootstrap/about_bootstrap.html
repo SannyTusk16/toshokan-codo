@@ -1,0 +1,24 @@
+<section class="py-5" id="about">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <img src="{{ about_image|default('https://via.placeholder.com/600x400') }}" class="img-fluid rounded shadow" alt="About Us">
+      </div>
+      <div class="col-lg-6">
+        <h2 class="display-5 fw-bold mb-4">{{ about_title|default('About Us') }}</h2>
+        <p class="lead">{{ about_description|default('We are passionate about delivering excellence and innovation in everything we do.') }}</p>
+        <p>{{ about_details|default('With years of experience and a dedicated team, we help businesses transform their digital presence and achieve remarkable results.') }}</p>
+        <div class="row mt-4">
+          <div class="col-6">
+            <h3 class="fw-bold text-primary">{{ stat1_number|default('500+') }}</h3>
+            <p class="text-muted">{{ stat1_label|default('Happy Clients') }}</p>
+          </div>
+          <div class="col-6">
+            <h3 class="fw-bold text-primary">{{ stat2_number|default('1000+') }}</h3>
+            <p class="text-muted">{{ stat2_label|default('Projects Done') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

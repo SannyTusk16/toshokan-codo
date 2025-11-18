@@ -1,0 +1,37 @@
+<footer class="bg-dark text-white py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <h5>{{ brand_name|default('My Website') }}</h5>
+        <p class="text-muted">{{ footer_description|default('Building amazing digital experiences.') }}</p>
+        <div class="d-flex gap-2">
+          <a href="#" class="text-white"><i class="bi bi-facebook fs-4"></i></a>
+          <a href="#" class="text-white"><i class="bi bi-twitter fs-4"></i></a>
+          <a href="#" class="text-white"><i class="bi bi-linkedin fs-4"></i></a>
+          <a href="#" class="text-white"><i class="bi bi-instagram fs-4"></i></a>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+          <li><a href="#home" class="text-muted text-decoration-none">Home</a></li>
+          <li><a href="#about" class="text-muted text-decoration-none">About</a></li>
+          <li><a href="#services" class="text-muted text-decoration-none">Services</a></li>
+          <li><a href="#contact" class="text-muted text-decoration-none">Contact</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-4">
+        <h5>Contact</h5>
+        <ul class="list-unstyled text-muted">
+          <li><i class="bi bi-envelope"></i> {{ contact_email|default('hello@example.com') }}</li>
+          <li><i class="bi bi-telephone"></i> {{ contact_phone|default('+1 (555) 123-4567') }}</li>
+          <li><i class="bi bi-geo-alt"></i> {{ contact_address|default('123 Street, City, State') }}</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="bg-secondary">
+    <div class="text-center text-muted">
+      <p class="mb-0">&copy; {{ current_year|default('2025') }} {{ brand_name|default('My Website') }}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

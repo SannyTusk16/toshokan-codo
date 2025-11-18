@@ -6,7 +6,8 @@ Responsibilities:
 - Extract key sections (navbar, hero, features, footer, etc.)
 - Identify preferred UI framework (Tailwind, Bootstrap, Material UI)
 - Detect style preferences (modern, minimal, retro, etc.)
-- Use lightweight keyword extraction (minimal AI usage)
+- Use Gemini AI for intelligent section selection when available
+- Use lightweight keyword extraction as fallback
 
 Output Format:
 {
@@ -19,7 +20,24 @@ Output Format:
 """
 
 import re
+import os
 from typing import Dict, List
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Try to import Gemini for AI-powered section selection
+try:
+    import google.generativeai as genai
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
+        genai.configure(api_key=GEMINI_API_KEY)
+        AI_MODEL = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"))
+        AI_AVAILABLE = True
+    else:
+        AI_AVAILABLE = False
+except ImportError:
+    AI_AVAILABLE = False
 
 
 # Keyword mappings for section detection
@@ -60,22 +78,29 @@ COLOR_KEYWORDS = [
 ]
 
 
-def parse_intent(user_prompt: str) -> dict:
+def parse_intent(user_prompt: str, use_ai: bool = True) -> dict:
     """
     Parse user's natural language prompt into structured intent.
     
     Args:
         user_prompt: Natural language description of desired website
+        use_ai: Whether to use AI for intelligent section selection
         
     Returns:
         Dictionary with sections, framework, style, and other metadata
     """
     prompt_lower = user_prompt.lower()
     
-    # Extract sections
-    sections = _extract_sections(prompt_lower)
+    # Try AI-powered section selection first
+    if use_ai and AI_AVAILABLE:
+        try:
+            sections = _ai_extract_sections(user_prompt)
+        except:
+            sections = _extract_sections(prompt_lower)
+    else:
+        sections = _extract_sections(prompt_lower)
     
-    # Determine framework (default to tailwind if not specified)
+    # Determine framework (default to bootstrap if not specified)
     framework = _extract_framework(prompt_lower)
     
     # Determine style
@@ -94,6 +119,73 @@ def parse_intent(user_prompt: str) -> dict:
         "colors": colors,
         "metadata": metadata
     }
+
+
+def _ai_extract_sections(user_prompt: str) -> List[str]:
+    """
+    Use Gemini AI to intelligently select which sections to include.
+    
+    Args:
+        user_prompt: User's website description
+        
+    Returns:
+        List of section names
+    """
+    ai_prompt = f"""Analyze this website request and determine which sections to include:
+
+User Request: "{user_prompt}"
+
+Available sections:
+- navbar (navigation bar)
+- hero (main landing section with headline)
+- about (about us/company info)
+- features (key features/services showcase)
+- gallery (portfolio/image showcase)
+- testimonials (customer reviews)
+- pricing (pricing plans/packages)
+- contact (contact form)
+- cta (call-to-action section)
+- footer (footer with links/info)
+
+Based on the user's request, select the most appropriate sections. Consider:
+1. Business type (e-commerce needs different sections than portfolio)
+2. Explicitly mentioned sections
+3. Common best practices for this type of website
+4. User goals and target audience
+
+Return ONLY a comma-separated list of section names, nothing else.
+Example: navbar,hero,features,gallery,contact,footer
+
+Your response:"""
+    
+    try:
+        response = AI_MODEL.generate_content(ai_prompt)
+        section_text = response.text.strip()
+        
+        # Parse AI response
+        sections = [s.strip() for s in section_text.split(',')]
+        
+        # Validate sections
+        valid_sections = ["navbar", "hero", "about", "features", "gallery", 
+                         "testimonials", "pricing", "contact", "cta", "footer"]
+        sections = [s for s in sections if s in valid_sections]
+        
+        # Ensure navbar and footer are always included
+        if "navbar" not in sections:
+            sections.insert(0, "navbar")
+        if "footer" not in sections:
+            sections.append("footer")
+        
+        # Order sections logically
+        section_order = ["navbar", "hero", "about", "features", "gallery", 
+                        "testimonials", "pricing", "contact", "cta", "footer"]
+        ordered_sections = [s for s in section_order if s in sections]
+        
+        return ordered_sections if ordered_sections else ["navbar", "hero", "footer"]
+        
+    except Exception as e:
+        # Fallback to keyword-based extraction
+        return _extract_sections(user_prompt.lower())
 
 
 def _extract_sections(prompt_lower: str) -> List[str]:
@@ -142,15 +234,15 @@ def _extract_framework(prompt_lower: str) -> str:
         prompt_lower: Lowercase version of user prompt
         
     Returns:
-        Framework name (default: "tailwind")
+        Framework name (default: "bootstrap")
     """
     for framework, keywords in FRAMEWORK_KEYWORDS.items():
         for keyword in keywords:
             if keyword in prompt_lower:
                 return framework
     
-    # Default to Tailwind
-    return "tailwind"
+    # Default to Bootstrap (best AI generation support)
+    return "bootstrap"
 
 
 def _extract_style(prompt_lower: str) -> str:

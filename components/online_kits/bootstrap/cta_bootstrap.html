@@ -1,0 +1,14 @@
+<section class="bg-primary text-white py-5" id="cta">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <h2 class="display-4 fw-bold mb-4">{{ cta_title|default('Ready to Get Started?') }}</h2>
+        <p class="lead mb-4">{{ cta_description|default('Join thousands of satisfied customers and transform your business today.') }}</p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="#contact" class="btn btn-light btn-lg px-5">{{ cta_button_primary|default('Start Free Trial') }}</a>
+          <a href="#pricing" class="btn btn-outline-light btn-lg px-5">{{ cta_button_secondary|default('View Pricing') }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

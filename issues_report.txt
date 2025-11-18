@@ -1,0 +1,66 @@
+Issues discovered on 2025-11-18
+================================
+
+1. Critical – CLI crashes during component mapping
+   - Files: src/main.py, src/component_mapper.py
+   - Details: Stage 2 loads the registry and calls map_sections_to_components(intent, component_registry, user_prompt=..., use_ai=...). The function signature is map_sections_to_components(intent, user_prompt: str = "", ...), so the registry dict is treated as a positional user_prompt while a second user_prompt is passed via keyword, raising "TypeError: map_sections_to_components() got multiple values for argument 'user_prompt'". The user’s last run failed for this reason.
+   - Impact: The CLI and all orchestrated tests terminate before assembling anything.
+   - Repro: python src/main.py "Build anything" → crashes before Stage 2 completes.
+   - Suggested fix: Remove the stray positional argument and pass verbose/use_ai flags explicitly (or update map_sections_to_components to accept a preloaded registry object).
+
+2. High – Default framework conflicts with the documented/tested behavior
+   - File: src/intent_parser.py (_extract_framework)
+   - Details: When the prompt does not specify a framework, _extract_framework returns "bootstrap" even though README and tests (tests/test_intent_parser.py::test_default_values) expect Tailwind as the default. As a result, every unspecified build falls back to the incomplete Bootstrap kit and the intent parser tests fail.
+   - Impact: Builds silently use a different component set than advertised; unit tests cannot pass without code changes.
+   - Suggested fix: Change the default return value to "tailwind" and update documentation/tests accordingly.
+
+3. High – Visual validation cannot open files on Windows
+   - File: src/visual_validator.py (validate_layout)
+   - Details: page.goto(f"file://{file_path.absolute()}") emits URLs like file://C:\site\temp.html, which are invalid on Windows (missing the third slash and forward slashes). Playwright raises net::ERR_FILE_NOT_FOUND, so validation always fails on Windows.
+   - Impact: Every validation/fix attempt on Windows (the current dev environment) fails, breaking the pipeline and tests relying on Playwright.
+   - Suggested fix: Build the URI with Path(...).resolve().as_uri() or manually format file:///C:/... with forward slashes.
+
+4. Medium – Browser cleanup raises UnboundLocalError on Playwright startup errors
+   - File: src/visual_validator.py (validate_layout)
+   - Details: browser is defined after p.chromium.launch(...). If launching Chromium fails (missing browsers or permissions), control jumps to finally: browser.close(), but browser is undefined, raising UnboundLocalError and masking the real cause.
+   - Impact: Users without playwright install chromium cannot even skip validation gracefully; the error log is misleading.
+   - Suggested fix: Initialize browser = None before the try block and guard the close call.
+
+5. Medium – Tailwind config script references undefined 'colors'
+   - File: src/assembler.py (FRAMEWORK_CDN["tailwind"]["config"])
+   - Details: The injected script sets tailwind.config = {... colors: { primary: colors.blue, ... } } but the variable colors is not defined in the CDN runtime. This throws ReferenceError: colors is not defined as soon as the page loads, preventing Tailwind from initializing.
+   - Impact: Every Tailwind build logs a runtime JS error and may skip the intended theme adjustments.
+   - Suggested fix: Inline actual hex values or reference tailwindcss default palettes (e.g., '#1d4ed8').
+
+6. Medium – Preview server changes the process working directory permanently
+   - File: src/output_manager.py (start_preview_server)
+   - Details: The helper calls os.chdir(dist_dir) before spinning up SimpleHTTPRequestHandler and never switches back. Any subsequent relative path operations (including saving future builds) now resolve relative to dist/, causing paths like dist/dist/*.html and hard-to-debug file-not-found errors.
+   - Suggested fix: Capture cwd at entry, chdir inside a try/finally, or use the directory argument available on SimpleHTTPRequestHandler instead of mutating process state.
+
+7. Medium – Missing dependency for Gemini integration
+   - Files: requirements.txt, src/gemini_generator.py
+   - Details: The Gemini integration imports google.generativeai but requirements.txt never installs google-generativeai. With USE_AI_GENERATION=true (the default), the import fails and component_mapper silently disables AI. Anyone enabling AI via .env hits ModuleNotFoundError.
+   - Impact: AI generation cannot be used without manually installing an undocumented package; CI/tests will also fail if USE_AI_GENERATION is true.
+   - Suggested fix: Add google-generativeai (and pin) to requirements.txt and document the dependency.
+
+8. Low – Quiet/verbose flags are ignored inside the mapper
+   - File: src/component_mapper.py (_map_from_registry)
+   - Details: map_sections_to_components forwards the verbose flag, but _map_from_registry never uses it and always prints warnings such as "⚠️ Warning: No ...". Running with --quiet still emits mapper logs, breaking the CLI contract and test expectations for quiet mode.
+   - Suggested fix: Respect the verbose argument (and propagate it into warning prints) or remove the unused parameter.
+
+9. Low – Component mapping metadata misreports fallback usage
+   - File: src/component_mapper.py (end of map_sections_to_components)
+   - Details: When AI is not used, metadata["fallback_count"] is set to len(component_map), so Stage 2 always reports every section as a "fallback" even though the registry path was the primary plan. This makes the build summary misleading and obscures real fallback events.
+   - Suggested fix: Only increment fallback_count when an actual AI failure triggers registry fallback.
+
+10. Low – analyze_issues emits fix actions that are never applied
+    - File: src/fixer.py (analyze_issues / apply_fixes)
+    - Details: Structure issues add a fix action with type "verify_structure", but apply_fixes has no branch to handle that type. The fixer silently drops the action, so structural validation issues can never be reduced.
+    - Impact: The auto-fixer can report success without touching structure issues, and future contributors may expect an action that does nothing.
+    - Suggested fix: Either implement a handler for verify_structure or stop emitting that action.
+
+11. Low – Mapper tests break as soon as AI generation is enabled
+    - File: tests/test_component_mapper.py (test_map_sections_to_components)
+    - Details: The test asserts that each mapped component path ends with ".html". When Gemini is configured, map_sections_to_components legitimately returns tokens like "AI_GENERATED:hero" so assembler can pull HTML from the cache. With a valid API key the tests now fail even though the feature works.
+    - Impact: Enabling the flagship AI feature makes the regression suite red.
+    - Suggested fix: Update the tests to accept both file paths and AI tokens or temporarily disable AI inside the test harness.

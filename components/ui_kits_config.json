@@ -1,0 +1,161 @@
+{
+  "ui_kits": {
+    "bootstrap": {
+      "name": "Bootstrap 5",
+      "version": "5.3.0",
+      "cdn": {
+        "css": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+        "js": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      },
+      "components_library": "bootstrap-templates",
+      "description": "Most popular CSS framework with extensive pre-built components"
+    },
+    "tailwind": {
+      "name": "Tailwind CSS",
+      "version": "3.3",
+      "cdn": {
+        "css": "https://cdn.tailwindcss.com"
+      },
+      "components_library": "tailwind-ui",
+      "description": "Utility-first CSS framework - using CDN version with built-in components"
+    },
+    "material": {
+      "name": "Material Design Bootstrap",
+      "version": "5.0",
+      "cdn": {
+        "css": "https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css",
+        "js": "https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"
+      },
+      "components_library": "mdb-templates",
+      "description": "Material Design components built on Bootstrap"
+    },
+    "bulma": {
+      "name": "Bulma",
+      "version": "0.9.4",
+      "cdn": {
+        "css": "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+      },
+      "components_library": "bulma-templates",
+      "description": "Modern CSS framework based on Flexbox"
+    },
+    "uikit": {
+      "name": "UIKit",
+      "version": "3.16",
+      "cdn": {
+        "css": "https://cdn.jsdelivr.net/npm/uikit@3.16/dist/css/uikit.min.css",
+        "js": "https://cdn.jsdelivr.net/npm/uikit@3.16/dist/js/uikit.min.js"
+      },
+      "components_library": "uikit-templates",
+      "description": "Lightweight and modular front-end framework"
+    }
+  },
+  "component_templates": {
+    "bootstrap": {
+      "navbar": {
+        "template": "navbar_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap navbar with responsive collapse"
+      },
+      "hero": {
+        "template": "hero_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap jumbotron/hero section"
+      },
+      "features": {
+        "template": "features_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap card-based features grid"
+      },
+      "footer": {
+        "template": "footer_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap footer with columns"
+      },
+      "gallery": {
+        "template": "gallery_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap grid-based image gallery"
+      },
+      "contact": {
+        "template": "contact_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap form with validation"
+      },
+      "testimonials": {
+        "template": "testimonials_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap card-based testimonials"
+      },
+      "pricing": {
+        "template": "pricing_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap pricing cards"
+      },
+      "about": {
+        "template": "about_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap two-column about section"
+      },
+      "cta": {
+        "template": "cta_bootstrap",
+        "cdn_only": true,
+        "description": "Bootstrap call-to-action banner"
+      }
+    },
+    "tailwind": {
+      "navbar": {
+        "template": "navbar_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind responsive navbar"
+      },
+      "hero": {
+        "template": "hero_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind gradient hero section"
+      },
+      "features": {
+        "template": "features_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind grid features"
+      },
+      "footer": {
+        "template": "footer_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind footer"
+      },
+      "gallery": {
+        "template": "gallery_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind image grid"
+      },
+      "contact": {
+        "template": "contact_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind contact form"
+      },
+      "testimonials": {
+        "template": "testimonials_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind testimonials"
+      },
+      "pricing": {
+        "template": "pricing_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind pricing tables"
+      },
+      "about": {
+        "template": "about_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind about section"
+      },
+      "cta": {
+        "template": "cta_tailwind",
+        "cdn_only": true,
+        "description": "Tailwind CTA"
+      }
+    }
+  },
+  "default_framework": "bootstrap",
+  "cache_templates": true,
+  "fallback_to_local": false
+}

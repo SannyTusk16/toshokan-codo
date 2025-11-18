@@ -1,0 +1,45 @@
+<section class="py-5 bg-light" id="features">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col text-center">
+        <h2 class="display-5 fw-bold">{{ features_title|default('Our Features') }}</h2>
+        <p class="lead text-muted">{{ features_subtitle|default('Everything you need to succeed') }}</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-lightning-charge-fill fs-1 text-primary"></i>
+            </div>
+            <h5 class="card-title">{{ feature1_title|default('Fast Performance') }}</h5>
+            <p class="card-text text-muted">{{ feature1_desc|default('Lightning-fast load times and smooth interactions.') }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-shield-check fs-1 text-primary"></i>
+            </div>
+            <h5 class="card-title">{{ feature2_title|default('Secure & Reliable') }}</h5>
+            <p class="card-text text-muted">{{ feature2_desc|default('Enterprise-grade security and 99.9% uptime.') }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-people-fill fs-1 text-primary"></i>
+            </div>
+            <h5 class="card-title">{{ feature3_title|default('Easy to Use') }}</h5>
+            <p class="card-text text-muted">{{ feature3_desc|default('Intuitive interface that anyone can master.') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

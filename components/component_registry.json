@@ -1,4 +1,36 @@
 {
+  "bootstrap": {
+    "navbar": [
+      "components/online_kits/bootstrap/navbar_bootstrap.html"
+    ],
+    "hero": [
+      "components/online_kits/bootstrap/hero_bootstrap.html"
+    ],
+    "features": [
+      "components/online_kits/bootstrap/features_bootstrap.html"
+    ],
+    "footer": [
+      "components/online_kits/bootstrap/footer_bootstrap.html"
+    ],
+    "gallery": [
+      "components/online_kits/bootstrap/gallery_bootstrap.html"
+    ],
+    "contact": [
+      "components/online_kits/bootstrap/contact_bootstrap.html"
+    ],
+    "testimonials": [
+      "components/online_kits/bootstrap/testimonials_bootstrap.html"
+    ],
+    "pricing": [
+      "components/online_kits/bootstrap/pricing_bootstrap.html"
+    ],
+    "about": [
+      "components/online_kits/bootstrap/about_bootstrap.html"
+    ],
+    "cta": [
+      "components/online_kits/bootstrap/cta_bootstrap.html"
+    ]
+  },
   "tailwind": {
     "navbar": [
       "components/tailwind/nav1.html"
@@ -30,11 +62,5 @@
     "cta": [
       "components/tailwind/cta1.html"
     ]
-  },
-  "bootstrap": {
-    "navbar": [],
-    "hero": [],
-    "features": [],
-    "footer": []
   }
 }

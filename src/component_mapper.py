@@ -1,12 +1,14 @@
 """
 Component Mapper Module
-Maps abstract section names to concrete component file paths.
+Maps abstract section names to concrete component file paths OR generates them with AI.
 
 Responsibilities:
 - Maintain a registry of available components for each framework
 - Map section names to appropriate component files
 - Handle component variants (e.g., navbar1, navbar2, hero3)
 - Support multiple UI frameworks
+- AI-powered component generation using Gemini (when enabled)
+- Fallback to pre-defined components when AI unavailable
 
 Example Registry:
 {
@@ -20,9 +22,34 @@ Example Registry:
 import json
 import os
 import random
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from pathlib import Path
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
+# Import AI generator
+try:
+    from src.gemini_generator import (
+        is_ai_available, 
+        generate_full_website_with_ai,
+        generate_component_with_ai
+    )
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+
+# Import online component fetcher
+try:
+    from src.online_component_fetcher import get_online_component, list_available_online_components
+    ONLINE_FETCHER_AVAILABLE = True
+except ImportError:
+    ONLINE_FETCHER_AVAILABLE = False
+
+# Configuration
+USE_AI = os.getenv("USE_AI_GENERATION", "true").lower() == "true"
+AI_FALLBACK = os.getenv("AI_FALLBACK_ENABLED", "true").lower() == "true"
 
 # Default component registry path
 REGISTRY_PATH = "components/component_registry.json"
@@ -52,41 +79,156 @@ def load_component_registry(registry_path: str = REGISTRY_PATH) -> dict:
 
 
 def map_sections_to_components(
-    intent: dict, 
+    intent: dict,
+    user_prompt: str = "",
+    use_ai: bool = None,
     selection_strategy: str = "first",
-    registry_path: str = REGISTRY_PATH
-) -> dict:
+    registry_path: str = REGISTRY_PATH,
+    verbose: bool = True
+) -> Tuple[dict, dict]:
     """
-    Map each section in the intent to a specific component file.
+    Map each section in the intent to a specific component file OR generate with AI.
     
     Args:
         intent: Parsed intent dictionary from intent_parser
-        selection_strategy: How to select from multiple variants
-            - "first": Always use first variant
-            - "random": Randomly select variant
-            - "round_robin": Cycle through variants
+        user_prompt: Original user prompt (required for AI generation)
+        use_ai: Override USE_AI setting (None = use env setting)
+        selection_strategy: How to select from multiple variants (for fallback)
         registry_path: Path to component registry file
+        verbose: Whether to print progress messages
         
     Returns:
-        Dictionary mapping sections to component file paths
-        
-    Example Output:
-        {
-            "navbar": "components/tailwind/nav1.html",
-            "hero": "components/tailwind/hero1.html",
-            "footer": "components/tailwind/footer1.html"
-        }
+        Tuple of (component_map, metadata)
+        - component_map: Dictionary mapping sections to component file paths or HTML
+        - metadata: Dictionary with generation metadata (ai_used, cached_count, etc.)
     """
+    metadata = {
+        "ai_used": False,
+        "ai_generated_count": 0,
+        "cached_count": 0,
+        "fallback_count": 0,
+        "total_sections": 0
+    }
+    
+    # Determine if we should use AI
+    should_use_ai = (use_ai if use_ai is not None else USE_AI) and AI_AVAILABLE
+    
+    if should_use_ai and is_ai_available():
+        # Try AI generation first
+        if verbose:
+            print("  🤖 Using Gemini AI for component generation...")
+        
+        try:
+            ai_components = generate_full_website_with_ai(user_prompt, intent, verbose=verbose)
+            component_map = {}
+            
+            for section, html in ai_components.items():
+                if html:
+                    # Store generated HTML directly (will be handled by assembler)
+                    component_map[section] = f"AI_GENERATED:{section}"
+                    metadata["ai_generated_count"] += 1
+                elif AI_FALLBACK:
+                    # Fallback to registry
+                    if verbose:
+                        print(f"  ⚠️  Falling back to pre-defined component for {section}")
+                    fallback = _get_component_from_registry(
+                        section, intent, selection_strategy, registry_path
+                    )
+                    if fallback:
+                        component_map[section] = fallback
+                        metadata["fallback_count"] += 1
+            
+            metadata["ai_used"] = True
+            metadata["total_sections"] = len(component_map)
+            
+            # Cache AI components for assembler to access
+            _cache_ai_components_for_assembler(ai_components)
+            
+            return component_map, metadata
+            
+        except Exception as e:
+            if verbose:
+                print(f"  ⚠️  AI generation failed: {str(e)}")
+            
+            if not AI_FALLBACK:
+                raise
+            
+            if verbose:
+                print("  📁 Falling back to pre-defined components...")
+    
+    # Use traditional registry mapping
+    component_map = _map_from_registry(intent, selection_strategy, registry_path, verbose)
+    metadata["total_sections"] = len(component_map)
+    metadata["fallback_count"] = len(component_map)
+    
+    return component_map, metadata
+
+
+def _get_component_from_registry(
+    section: str,
+    intent: dict,
+    selection_strategy: str,
+    registry_path: str
+) -> Optional[str]:
+    """Get a single component from the registry."""
     registry = load_component_registry(registry_path)
+    framework = intent.get("framework", "bootstrap")
+    
+    if framework not in registry:
+        return None
+    
+    framework_components = registry[framework]
+    available_components = framework_components.get(section, [])
+    
+    if not available_components:
+        return None
+    
+    # Select component based on strategy
+    if selection_strategy == "random":
+        return random.choice(available_components)
+    elif selection_strategy == "round_robin":
+        # Simple round-robin (could be improved with state)
+        index = hash(section) % len(available_components)
+        return available_components[index]
+    else:  # "first" or default
+        return available_components[0]
+
+
+def _map_from_registry(
+    intent: dict,
+    selection_strategy: str,
+    registry_path: str,
+    verbose: bool
+) -> dict:
+    """Map sections to components using the traditional registry approach."""
     framework = intent.get("framework", "tailwind")
     sections = intent.get("sections", [])
+    component_map = {}
+    
+    # Use online components for Bootstrap if available
+    if framework.lower() == "bootstrap" and ONLINE_FETCHER_AVAILABLE:
+        if verbose:
+            print("  🌐 Using online Bootstrap components...")
+        
+        available_online = list_available_online_components("bootstrap")
+        
+        for section in sections:
+            if section in available_online:
+                # Mark as online component (will be fetched by assembler)
+                component_map[section] = f"ONLINE:bootstrap:{section}"
+            elif verbose:
+                print(f"  ⚠️  Warning: No online component for section '{section}', skipping...")
+        
+        return component_map
+    
+    # Traditional file-based approach for other frameworks
+    registry = load_component_registry(registry_path)
     
     # Check if framework exists in registry
     if framework not in registry:
         raise ValueError(f"Framework '{framework}' not found in registry. Available: {list(registry.keys())}")
     
     framework_components = registry[framework]
-    component_map = {}
     
     for section in sections:
         # Get available components for this section
@@ -331,6 +473,35 @@ def test_component_mapper():
                 print(f"      - {path}")
     else:
         print("  ✅ All component paths are valid!")
+
+
+# AI component cache (temporary storage)
+_AI_COMPONENT_CACHE = {}
+
+
+def _cache_ai_components_for_assembler(components: dict):
+    """Cache AI-generated components for assembler to access."""
+    global _AI_COMPONENT_CACHE
+    _AI_COMPONENT_CACHE = components
+
+
+def get_ai_component(section: str) -> Optional[str]:
+    """
+    Retrieve AI-generated component HTML.
+    
+    Args:
+        section: Section type
+        
+    Returns:
+        HTML string or None
+    """
+    return _AI_COMPONENT_CACHE.get(section)
+
+
+def clear_ai_cache():
+    """Clear the AI component cache."""
+    global _AI_COMPONENT_CACHE
+    _AI_COMPONENT_CACHE = {}
 
 
 if __name__ == "__main__":
